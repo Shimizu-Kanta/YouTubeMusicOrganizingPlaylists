@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Music Playlist Organizer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>YouTube Music Playlist Organizer</h1>
+      <button id="loginBtn" class="primary">Googleでログイン</button>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar" aria-label="プレイリストサイドバー">
+        <h2>プレイリスト</h2>
+        <p id="playlistHint" class="hint">
+          プレイリストを選択すると、ここに楽曲一覧が表示されます。
+        </p>
+        <ul id="playlistList" class="playlist-list"></ul>
+      </aside>
+
+      <section class="center" aria-label="楽曲検索と追加">
+        <h2>楽曲検索</h2>
+        <div class="search-box">
+          <input id="searchInput" type="text" placeholder="曲名・アーティストで検索" />
+          <button id="searchBtn" class="primary">検索</button>
+        </div>
+        <ul id="searchResults" class="search-results"></ul>
+      </section>
+    </main>
+
+    <template id="trackItemTemplate">
+      <li class="track-item" draggable="true">
+        <span class="drag-handle" aria-label="ドラッグして並び替え">☰</span>
+        <div class="track-info">
+          <p class="track-title"></p>
+          <p class="track-artist"></p>
+        </div>
+        <button class="danger remove-btn">削除</button>
+      </li>
+    </template>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>

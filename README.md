@@ -19,9 +19,6 @@ python3 -m http.server 8000
 
 ブラウザで `http://localhost:8000` を開いてください。
 
-## 実運用で必要な実装
+## 本実装に向けた要件整理
 
-- Google Identity Services による OAuth ログイン
-- YouTube Data API v3 のプレイリスト取得/更新
-- API利用時のエラーハンドリング・レート制御
-- バックエンド経由のトークン保護
+- `docs/production-implementation-plan.md` を参照してください。

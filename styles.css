@@ -29,6 +29,25 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.top-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.config-panel {
+  display: grid;
+  grid-template-columns: 240px minmax(260px, 600px) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: #fdfdff;
+}
+
+.config-panel .hint {
+  grid-column: 1 / -1;
+}
+
 h1,
 h2,
 p {
@@ -38,7 +57,7 @@ p {
 .layout {
   display: grid;
   grid-template-columns: 320px 1fr;
-  min-height: calc(100vh - 74px);
+  min-height: calc(100vh - 141px);
 }
 
 .sidebar,
@@ -112,6 +131,13 @@ p {
   font-size: 0.9rem;
 }
 
+input {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -137,6 +163,11 @@ button.danger {
 
 @media (max-width: 900px) {
   .layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .config-panel {
     grid-template-columns: 1fr;
   }
 

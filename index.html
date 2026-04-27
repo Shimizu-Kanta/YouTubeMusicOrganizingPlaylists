@@ -5,12 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>YouTube Music Playlist Organizer</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
     <header class="topbar">
       <h1>YouTube Music Playlist Organizer</h1>
-      <button id="loginBtn" class="primary">Googleでログイン</button>
+      <div class="top-actions">
+        <button id="loginBtn" class="primary">Googleでログイン</button>
+        <button id="loadPlaylistsBtn" class="secondary">プレイリスト取得</button>
+      </div>
     </header>
+
+    <section class="config-panel" aria-label="OAuth設定">
+      <label for="clientIdInput">Google OAuth Client ID</label>
+      <input
+        id="clientIdInput"
+        type="text"
+        placeholder="xxxxx.apps.googleusercontent.com"
+        autocomplete="off"
+      />
+      <button id="saveClientIdBtn" class="secondary">保存</button>
+      <p id="authStatus" class="hint">Client IDを保存してからログインしてください。</p>
+    </section>
 
     <main class="layout">
       <aside class="sidebar" aria-label="プレイリストサイドバー">

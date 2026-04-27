@@ -1,5 +1,10 @@
+const STORAGE_CLIENT_ID_KEY = "ytmOrganizer.clientId";
+const YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube";
+
 const state = {
   isSignedIn: false,
+  oauthClientId: localStorage.getItem(STORAGE_CLIENT_ID_KEY) ?? "",
+  accessToken: "",
   selectedPlaylistId: null,
   playlists: [
     {
@@ -9,14 +14,6 @@ const state = {
         { id: "t1", title: "Night Owl", artist: "Galimatias" },
         { id: "t2", title: "Awake", artist: "Tycho" },
         { id: "t3", title: "Open", artist: "Rhye" },
-      ],
-    },
-    {
-      id: "p2",
-      title: "Workout",
-      tracks: [
-        { id: "t4", title: "Lose Yourself", artist: "Eminem" },
-        { id: "t5", title: "Can’t Hold Us", artist: "Macklemore & Ryan Lewis" },
       ],
     },
   ],
@@ -34,7 +31,17 @@ const searchInputEl = document.getElementById("searchInput");
 const searchBtnEl = document.getElementById("searchBtn");
 const searchResultsEl = document.getElementById("searchResults");
 const loginBtnEl = document.getElementById("loginBtn");
+const loadPlaylistsBtnEl = document.getElementById("loadPlaylistsBtn");
 const trackTemplate = document.getElementById("trackItemTemplate");
+const clientIdInputEl = document.getElementById("clientIdInput");
+const saveClientIdBtnEl = document.getElementById("saveClientIdBtn");
+const authStatusEl = document.getElementById("authStatus");
+
+clientIdInputEl.value = state.oauthClientId;
+
+function setAuthStatus(message) {
+  authStatusEl.textContent = message;
+}
 
 function selectedPlaylist() {
   return state.playlists.find((p) => p.id === state.selectedPlaylistId) ?? null;
@@ -177,14 +184,86 @@ function renderSearchResults(keyword = "") {
   });
 }
 
-loginBtnEl.addEventListener("click", () => {
-  state.isSignedIn = true;
-  loginBtnEl.textContent = "ログイン済み (モック)";
-  loginBtnEl.disabled = true;
-  alert(
-    "Googleログインの実装はモックです。実運用時は Google Identity Services + YouTube Data API v3 のOAuthスコープ設定を追加してください。"
-  );
-});
+function saveClientId() {
+  const clientId = clientIdInputEl.value.trim();
+  if (!clientId) {
+    alert("Client IDを入力してください。");
+    return;
+  }
+
+  state.oauthClientId = clientId;
+  localStorage.setItem(STORAGE_CLIENT_ID_KEY, clientId);
+  setAuthStatus("Client IDを保存しました。ログインできます。");
+}
+
+function requestAccessToken() {
+  if (!state.oauthClientId) {
+    alert("先にClient IDを保存してください。");
+    return;
+  }
+
+  if (!window.google?.accounts?.oauth2) {
+    setAuthStatus("Google Identity Servicesの読み込みに失敗しました。");
+    return;
+  }
+
+  const tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: state.oauthClientId,
+    scope: YOUTUBE_SCOPE,
+    callback: (response) => {
+      if (response.error) {
+        setAuthStatus(`ログイン失敗: ${response.error}`);
+        return;
+      }
+      state.accessToken = response.access_token;
+      state.isSignedIn = true;
+      loginBtnEl.textContent = "ログイン済み";
+      setAuthStatus("ログイン成功。プレイリスト取得が可能です。");
+    },
+  });
+
+  tokenClient.requestAccessToken({ prompt: "consent" });
+}
+
+async function fetchPlaylistsFromYouTube() {
+  if (!state.accessToken) {
+    alert("先にGoogleログインしてください。");
+    return;
+  }
+
+  setAuthStatus("プレイリストを取得中...");
+  const endpoint = "https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=50";
+
+  const response = await fetch(endpoint, {
+    headers: {
+      Authorization: `Bearer ${state.accessToken}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    setAuthStatus(`取得失敗: HTTP ${response.status}`);
+    console.error(errorBody);
+    return;
+  }
+
+  const data = await response.json();
+  state.playlists = (data.items ?? []).map((item) => ({
+    id: item.id,
+    title: item.snippet?.title ?? "Untitled",
+    tracks: [],
+  }));
+
+  state.selectedPlaylistId = state.playlists[0]?.id ?? null;
+  renderPlaylists();
+  renderTracks();
+  setAuthStatus(`プレイリスト取得成功: ${state.playlists.length}件`);
+}
+
+saveClientIdBtnEl.addEventListener("click", saveClientId);
+loginBtnEl.addEventListener("click", requestAccessToken);
+loadPlaylistsBtnEl.addEventListener("click", fetchPlaylistsFromYouTube);
 
 searchBtnEl.addEventListener("click", () => {
   renderSearchResults(searchInputEl.value);
@@ -193,6 +272,10 @@ searchBtnEl.addEventListener("click", () => {
 searchInputEl.addEventListener("keydown", (event) => {
   if (event.key === "Enter") renderSearchResults(searchInputEl.value);
 });
+
+if (state.oauthClientId) {
+  setAuthStatus("保存済みClient IDを読み込みました。ログインできます。");
+}
 
 renderPlaylists();
 renderSearchResults();
